@@ -13,6 +13,7 @@ struct ContentView: View {
                     .frame(minHeight: 260, maxHeight: 380)
                     .clipShape(RoundedRectangle(cornerRadius: 22))
                     .padding(.horizontal)
+                movementPad
                 dashboard
                 actions
             }
@@ -21,10 +22,43 @@ struct ContentView: View {
 
     private var header: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 2) { Text("H0RII TYCOON").font(.system(size: 22, weight: .black, design: .rounded)); Text("Dag \(store.day) · \(store.companyName)").foregroundStyle(.secondary).font(.caption) }
+            VStack(alignment: .leading, spacing: 2) {
+                Text("H0RII TYCOON").font(.system(size: 22, weight: .black, design: .rounded))
+                Text("Dag \(store.day) · \(store.companyName)").foregroundStyle(.secondary).font(.caption)
+            }
             Spacer()
-            Menu { Button("HQ") { store.selectedMap = "HQ" }; Button("Downtown") { store.selectedMap = "Downtown" }; Divider(); Button("Reset save", role: .destructive) { store.reset() } } label: { Label(store.selectedMap, systemImage: "map.fill").font(.caption.bold()).padding(10).background(.white.opacity(0.1), in: Capsule()) }
+            Menu {
+                Button("HQ") { store.selectedMap = "HQ" }
+                Button("Downtown") { store.selectedMap = "Downtown" }
+                Divider()
+                Button("Reset save", role: .destructive) { store.reset() }
+            } label: {
+                Label(store.selectedMap, systemImage: "map.fill").font(.caption.bold()).padding(10).background(.white.opacity(0.1), in: Capsule())
+            }
         }.padding(.horizontal).padding(.top, 12).padding(.bottom, 8)
+    }
+
+    private var movementPad: some View {
+        HStack(spacing: 12) {
+            VStack(spacing: 6) {
+                Button { store.move(dx: 0, dz: -1) } label: { Image(systemName: "arrow.up.circle.fill") }
+                HStack(spacing: 18) {
+                    Button { store.move(dx: -1, dz: 0) } label: { Image(systemName: "arrow.left.circle.fill") }
+                    Button { store.move(dx: 1, dz: 0) } label: { Image(systemName: "arrow.right.circle.fill") }
+                }
+                Button { store.move(dx: 0, dz: 1) } label: { Image(systemName: "arrow.down.circle.fill") }
+            }
+            .font(.system(size: 30))
+            .buttonStyle(.plain)
+            .foregroundStyle(.white.opacity(0.9))
+            Button { store.collectDeal() } label: {
+                Label("Collect deal", systemImage: "dollarsign.circle.fill")
+                    .font(.subheadline.bold()).frame(maxWidth: .infinity).padding(12)
+            }
+            .buttonStyle(.borderedProminent).tint(.yellow)
+        }
+        .padding(.horizontal)
+        .padding(.top, 8)
     }
 
     private var dashboard: some View {
@@ -35,7 +69,9 @@ struct ContentView: View {
         }.padding(.horizontal).padding(.top, 12)
     }
 
-    private func stat(_ title: String, _ value: String, _ color: Color) -> some View { VStack(alignment: .leading, spacing: 3) { Text(title).font(.system(size: 9, weight: .bold)); Text(value).font(.system(size: 15, weight: .black, design: .rounded)).foregroundStyle(color) }.frame(maxWidth: .infinity, alignment: .leading).padding(9).background(.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 12)) }
+    private func stat(_ title: String, _ value: String, _ color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 3) { Text(title).font(.system(size: 9, weight: .bold)); Text(value).font(.system(size: 15, weight: .black, design: .rounded)).foregroundStyle(color) }.frame(maxWidth: .infinity, alignment: .leading).padding(9).background(.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 12))
+    }
 
     private var actions: some View {
         VStack(spacing: 8) {
@@ -44,5 +80,7 @@ struct ContentView: View {
         }.padding().padding(.bottom, 4)
     }
 
-    private func action(_ title: String, _ icon: String, _ tint: Color, _ tap: @escaping () -> Void) -> some View { Button(action: tap) { Label(title, systemImage: icon).font(.subheadline.bold()).frame(maxWidth: .infinity).padding(12) }.buttonStyle(.borderedProminent).tint(tint) }
+    private func action(_ title: String, _ icon: String, _ tint: Color, _ tap: @escaping () -> Void) -> some View {
+        Button(action: tap) { Label(title, systemImage: icon).font(.subheadline.bold()).frame(maxWidth: .infinity).padding(12) }.buttonStyle(.borderedProminent).tint(tint)
+    }
 }

@@ -14,6 +14,7 @@ struct Tycoon3DView: UIViewRepresentable {
 
     func updateUIView(_ view: SCNView, context: Context) {
         scene.setMap(store.selectedMap)
+        scene.updatePlayer(x: store.playerX, z: store.playerZ, pickupsCollected: store.pickupsCollected)
         view.scene = scene
     }
 }

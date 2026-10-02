@@ -20,8 +20,11 @@ final class TycoonStore: ObservableObject {
     @Published private(set) var projects: [TycoonProject] { didSet { save() } }
     @Published var selectedMap = "HQ"
     @Published private(set) var toast = "Velkommen til H0RII Tycoon"
+    @Published private(set) var playerX: Float = 0
+    @Published private(set) var playerZ: Float = 2.4
+    @Published private(set) var pickupsCollected = 0
 
-    private let key = "horii.tycoon.save.v1"
+    private let key = "horii.tycoon.save.v2"
 
     init() {
         if let data = UserDefaults.standard.data(forKey: key),
@@ -29,12 +32,28 @@ final class TycoonStore: ObservableObject {
             companyName = save.companyName; creatorName = save.creatorName
             cash = save.cash; likes = save.likes; followers = save.followers
             day = save.day; dailyRevenue = save.dailyRevenue; projects = save.projects
+            playerX = save.playerX; playerZ = save.playerZ; pickupsCollected = save.pickupsCollected
         } else {
             companyName = "H0RII Labs"; creatorName = "horii"
             cash = 5000; likes = 340; followers = 120
             day = 1; dailyRevenue = 420
             projects = [TycoonProject(id: UUID(), name: "H0RII ONE", likes: 180, status: "Live")]
         }
+    }
+
+    func move(dx: Float, dz: Float) {
+        playerX = min(max(playerX + dx, -14), 14)
+        playerZ = min(max(playerZ + dz, -14), 14)
+        toast = "Flytter rundt i \(selectedMap)"
+        save()
+    }
+
+    func collectDeal() {
+        let bonus = selectedMap == "Downtown" ? 350 : 220
+        cash += bonus
+        likes += selectedMap == "Downtown" ? 45 : 25
+        pickupsCollected += 1
+        toast = "Deal collected: +$\(bonus)"
     }
 
     func publishPost() {
@@ -66,13 +85,15 @@ final class TycoonStore: ObservableObject {
 
     func nextDay() {
         day += 1; cash += dailyRevenue; likes += max(1, followers / 25)
-        toast = "Dag \(day): +$\(dailyRevenue) inntekt"
+        pickupsCollected = 0
+        toast = "Dag \(day): +$\(dailyRevenue) inntekt, nye deals spawned"
     }
 
     func reset() {
         UserDefaults.standard.removeObject(forKey: key)
         companyName = "H0RII Labs"; creatorName = "horii"
         cash = 5000; likes = 340; followers = 120; day = 1; dailyRevenue = 420
+        playerX = 0; playerZ = 2.4; pickupsCollected = 0
         projects = [TycoonProject(id: UUID(), name: "H0RII ONE", likes: 180, status: "Live")]
         toast = "Spillet er startet på nytt"
     }
@@ -80,7 +101,8 @@ final class TycoonStore: ObservableObject {
     private func save() {
         let save = SaveGame(companyName: companyName, creatorName: creatorName, cash: cash,
                             likes: likes, followers: followers, day: day,
-                            dailyRevenue: dailyRevenue, projects: projects)
+                            dailyRevenue: dailyRevenue, projects: projects,
+                            playerX: playerX, playerZ: playerZ, pickupsCollected: pickupsCollected)
         if let data = try? JSONEncoder().encode(save) { UserDefaults.standard.set(data, forKey: key) }
     }
 
@@ -88,5 +110,6 @@ final class TycoonStore: ObservableObject {
         var companyName: String; var creatorName: String; var cash: Int
         var likes: Int; var followers: Int; var day: Int; var dailyRevenue: Int
         var projects: [TycoonProject]
+        var playerX: Float; var playerZ: Float; var pickupsCollected: Int
     }
 }
